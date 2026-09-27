@@ -5,7 +5,7 @@
 # Carga de audio, filtrado, VAD y extracción de características (Espectrogramas / MFCCs)
 librosa>=0.10.0
 
-# Algoritmos de clustering (K-Means) para agrupar vectores de voz e identificar hablantes
+# KMeans, silhouette y agrupamiento jerárquico para comparar huellas vocales
 scikit-learn>=1.2.0
 
 # Operaciones matemáticas vectoriales y manejo de arrays
@@ -13,3 +13,19 @@ numpy>=1.22.0
 
 # Requerido por librosa para lectura de archivos de sonido en distintos formatos (.wav, .mp3, etc.)
 soundfile>=0.12.0
+# Huellas vocales con el modelo local incluido en Resemblyzer
+Resemblyzer==0.1.4
+# Detección de voz sobre la línea de tiempo original
+webrtcvad>=2.0.10,<3
+# webrtcvad 2.0.10 importa pkg_resources, retirado desde setuptools 82.
+setuptools>=80.9,<81
+
+# Ejecutable FFmpeg para decodificar M4A, AAC y otros formatos de audio
+imageio-ffmpeg>=0.6,<1
+
+# Ejecución local de ERes2Net (modelo público; sin registro ni token)
+sherpa-onnx==1.13.8
+
+# Página local y configuración mediante .env
+Flask>=3.1,<4
+python-dotenv>=1.2,<2

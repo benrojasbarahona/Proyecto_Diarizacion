@@ -1,17 +1,29 @@
 import os
 import sys
-# Importamos la función desde el archivo vecino diarization.py
-from diarizacion import ejecutar_diarizacion
+from pathlib import Path
+from diarizacion import EXTENSIONES_AUDIO, ejecutar_diarizacion
 
 # Ruta a la carpeta data
-DATA_DIR = os.path.join("data")
+DATA_DIR = Path(__file__).resolve().parents[1] / "data"
 
 def listar_audios():
     if not os.path.exists(DATA_DIR):
         os.makedirs(DATA_DIR)
         
-    archivos = [f for f in os.listdir(DATA_DIR) if f.lower().endswith(('.wav', '.ogg', '.mp3'))]
-    return archivos
+    # La lista es compartida con diarizacion; el lector valida el contenido.
+    archivos = [f for f in os.listdir(DATA_DIR)
+                if not f.startswith('.') and (Path(DATA_DIR) / f).is_file()
+                and Path(f).suffix.lower() in EXTENSIONES_AUDIO]
+    return sorted(archivos, key=str.casefold)
+
+def procesar_archivo(audio_path):
+    try:
+        reporte = ejecutar_diarizacion(audio_path)
+    except (OSError, ValueError) as exc:
+        print(f"\n⚠️ {exc}")
+        return False
+    imprimir_resultados(reporte)
+    return True
 
 def imprimir_resultados(reporte):
     print("\n" + "="*60)
@@ -19,12 +31,14 @@ def imprimir_resultados(reporte):
     print("="*60)
     print(f"• Duración del archivo: {reporte['duracion_total_archivo_seg']}s")
     print(f"• Tiempo de voz activa: {reporte['tiempo_total_voz_seg']}s")
-    print(f"• Tiempo en silencio:   {reporte['tiempo_silencio_seg']}s")
-    print(f"• Personas detectadas:  {reporte['hablantes_detectados']}\n")
+    print(f"• Tiempo sin voz atribuida: {reporte['tiempo_silencio_seg']}s")
+    print(f"• Cantidad estimada de hablantes:  {reporte['hablantes_detectados']}\n")
     
     print("Tiempos de participación por persona:")
     for hablante, datos in reporte["hablantes"].items():
         print(f"  👉 {hablante}: {datos['segundos']}s ({datos['porcentaje']}%)")
+    for advertencia in reporte.get("advertencias", []):
+        print(f"  ⚠️ {advertencia}")
     print("="*60 + "\n")
 
 def menu_post_diarizacion(audio_path):
@@ -40,8 +54,7 @@ def menu_post_diarizacion(audio_path):
             return "menu_principal"
         elif opcion == "2":
             print("\nProcesando de nuevo...")
-            reporte = ejecutar_diarizacion(audio_path)
-            imprimir_resultados(reporte)
+            procesar_archivo(audio_path)
         elif opcion == "3":
             return "seleccionar_audio"
         else:
@@ -51,7 +64,7 @@ def seleccionar_y_diarizar():
     while True:
         audios = listar_audios()
         if not audios:
-            print("\n⚠️ No se encontraron archivos (.wav, .ogg, .mp3) en la carpeta 'data/'.")
+            print("\n⚠️ No se encontraron audios compatibles en 'data/' (MP3, M4A, WAV, OGG, FLAC, AAC, etc.).")
             input("Presiona Enter para volver al menú principal...")
             break
 
@@ -69,8 +82,8 @@ def seleccionar_y_diarizar():
             audio_path = os.path.join(DATA_DIR, audio_seleccionado)
             
             print(f"\nAnalizando {audio_seleccionado}...")
-            reporte = ejecutar_diarizacion(audio_path)
-            imprimir_resultados(reporte)
+            if not procesar_archivo(audio_path):
+                continue
             
             siguiente_accion = menu_post_diarizacion(audio_path)
             if siguiente_accion == "menu_principal":
