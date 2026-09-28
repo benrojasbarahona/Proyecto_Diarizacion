@@ -4,7 +4,7 @@ Proyecto en Python, actualmente con interfaz de consola y una interfaz web plani
 
 El proyecto busca trabajar también con **habla simultánea (overlapping speech)** y dejar preparada una arquitectura que, como extensión, permita realizar **separación de fuentes de audio** cuando sea necesario.
 
-> Proyecto desarrollado para el ramo **Acústica Computacional con Python 
+>  Proyecto desarrollado para el ramo **Acústica Computacional con Python 
 
 ---
 
